@@ -1,0 +1,83 @@
+# ============================================================
+#  rag-svc default values
+#  Override per environment with values-{dev,staging,prod}.yaml
+# ============================================================
+
+# Logical grouping label (app.kubernetes.io/part-of)
+partOf: rag-platform
+
+replicaCount: 2
+
+image:
+  repository: your-dockerhub-user/rag-svc   # <-- CHANGE ME
+  pullPolicy: IfNotPresent
+  # tag is intentionally empty: falls back to Chart.appVersion,
+  # and CI injects the real tag via --set image.tag=$GIT_SHA
+  tag: ""
+
+imagePullSecrets: []
+fullnameOverride: ""
+
+# Harden the container filesystem; mounts an emptyDir at /tmp.
+# Set false if your app must write elsewhere on the rootfs.
+readOnlyRootFilesystem: true
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+    # IRSA: set per environment, e.g.
+    # eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/rag-svc-prod
+
+service:
+  type: ClusterIP
+  port: 8000
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    failureThreshold: 3
+  readiness:
+    path: /ready
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 3
+
+topologySpread:
+  enabled: true
+
+# Non-secret config -> rendered into a ConfigMap, injected as envFrom.
+config:
+  LOG_LEVEL: INFO
+  EMBEDDING_MODEL: amazon.titan-embed-text-v2:0
+  CHUNK_SIZE: "500"
+  TOP_K: "5"
+
+# Secrets -> rendered into a Secret (replace with External Secrets later).
+secrets:
+  enabled: false
+  # data: {}   # populated per environment
+
+# Free-form extra env vars if needed
+extraEnv: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}
