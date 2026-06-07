@@ -1,0 +1,91 @@
+apiVersion: v1
+items:
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"rbac.authorization.k8s.io/v1","kind":"Role","metadata":{"annotations":{},"name":"deploy-bot-role","namespace":"build"},"rules":[{"apiGroups":[""],"resourceNames":["app-config","feature-flags"],"resources":["configmaps"],"verbs":["get","update"]},{"apiGroups":[""],"resources":["pods/exec"],"verbs":["create"]}]}
+    creationTimestamp: "2026-06-07T20:06:49Z"
+    name: deploy-bot-role
+    namespace: build
+    resourceVersion: "3770"
+    uid: 305b48f1-f9cb-49aa-a09a-34272c1315ff
+  rules:
+  - apiGroups:
+    - ""
+    resourceNames:
+    - app-config
+    - feature-flags
+    resources:
+    - configmaps
+    verbs:
+    - get
+    - update
+  - apiGroups:
+    - ""
+    resources:
+    - pods/exec
+    verbs:
+    - create
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"rbac.authorization.k8s.io/v1","kind":"Role","metadata":{"annotations":{},"name":"job-manager","namespace":"build"},"rules":[{"apiGroups":["batch"],"resources":["jobs"],"verbs":["create","list","delete"]}]}
+    creationTimestamp: "2026-06-07T19:49:31Z"
+    name: job-manager
+    namespace: build
+    resourceVersion: "2313"
+    uid: 7b1de24b-4370-4644-8130-1685cd074e56
+  rules:
+  - apiGroups:
+    - batch
+    resources:
+    - jobs
+    verbs:
+    - create
+    - list
+    - delete
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"rbac.authorization.k8s.io/v1","kind":"RoleBinding","metadata":{"annotations":{},"name":"ci-bot-job-manager","namespace":"build"},"roleRef":{"apiGroup":"rbac.authorization.k8s.io","kind":"Role","name":"job-manager"},"subjects":[{"kind":"ServiceAccount","name":"ci-bot","namespace":"build"}]}
+    creationTimestamp: "2026-06-07T19:49:31Z"
+    name: ci-bot-job-manager
+    namespace: build
+    resourceVersion: "2314"
+    uid: 32b24845-96b1-4ae0-b43d-03fb87b1a36a
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: job-manager
+  subjects:
+  - kind: ServiceAccount
+    name: ci-bot
+    namespace: build
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"rbac.authorization.k8s.io/v1","kind":"RoleBinding","metadata":{"annotations":{},"name":"deploy-bot-binding","namespace":"build"},"roleRef":{"apiGroup":"rbac.authorization.k8s.io","kind":"Role","name":"deploy-bot-role"},"subjects":[{"kind":"ServiceAccount","name":"deploy-bot","namespace":"build"}]}
+    creationTimestamp: "2026-06-07T20:06:49Z"
+    name: deploy-bot-binding
+    namespace: build
+    resourceVersion: "3771"
+    uid: 7d879a25-21a5-497f-8737-f252f2b5fd1c
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: deploy-bot-role
+  subjects:
+  - kind: ServiceAccount
+    name: deploy-bot
+    namespace: build
+kind: List
+metadata:
+  resourceVersion: ""
